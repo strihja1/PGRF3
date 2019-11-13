@@ -18,14 +18,15 @@ uniform float type;
 uniform float teleso;
 uniform float posX, posY, posZ;
 out vec2 pos;
+uniform float pi = 3.14159265359;
 
 float getZ(vec2 vec){
-	return sin(time + vec.y*3.14);
+	return sin(time + vec.y*pi);
 }
 
 vec3 getSphere(vec2 vec){
-	float az = vec.x * 3.14f;
-	float ze = vec.y * 3.14f/2;
+	float az = vec.x * pi;
+	float ze = vec.y * pi/2;
 	float r = 1;
 
 	float x = r * cos(az) * cos(ze);
@@ -35,8 +36,8 @@ vec3 getSphere(vec2 vec){
 }
 
 vec3 getSun(vec2 vec){
-	float az = vec.x * 3.14f;
-	float ze = vec.y * 3.14f/2;
+	float az = vec.x * pi;
+	float ze = vec.y * pi/2;
 	float r = 0.3;
 
 	float x = posX+ r * cos(az) * cos(ze);
@@ -62,8 +63,8 @@ vec3 getWTF(vec2 vec){
 }
 
 vec3 getWeirdSphere(vec2 vec){
-	float az = vec.x * 3.14f;
-	float ze = vec.y * 3.14f/2;
+	float az = vec.x * pi;
+	float ze = vec.y * pi/2;
 	float r = 1;
 
 	float x = r * cos(az) * cos(ze);
@@ -71,11 +72,21 @@ vec3 getWeirdSphere(vec2 vec){
 	float z =       r * sin(ze);
 	return vec3(x, y, z);
 }
+
+vec3 getParsur(vec2 vec){
+	float s = 2*pi*vec.x;
+	float t = vec.y;
+	float x = t* cos(s);
+	float y =  t * sin(s);
+	float z =t;
+	return vec3(x, y, z);
+}
+
 vec3 getPlane(vec2 vec){
 	return vec3(vec*4,-1);
 }
 vec3 getMovingPlane(vec2 vec){
-	return vec3(vec*4,getZ(vec));
+	return vec3(vec,getZ(vec));
 }
 
 
@@ -96,10 +107,19 @@ vec3 getWTFNormal(vec2 vec){
 	vec3 v = getWTF(vec + vec2(0,0.001))-getWTF(vec - vec2(0,0.001));
 	return cross(u,v);
 }
+vec3 getParsurNormal(vec2 vec){
+	vec3 u = getParsur(vec + vec2(0.001,0))-getParsur(vec - vec2(0.001,0));
+	vec3 v = getParsur(vec + vec2(0,0.001))-getParsur(vec - vec2(0,0.001));
+	return cross(u,v);
+}
 
 vec3 getPlaneNormal(vec2 vec){
 	vec3 u = getPlane(vec + vec2(0.001,0))-getPlane(vec - vec2(0.001,0));
 	vec3 v = getPlane(vec + vec2(0,0.001))-getPlane(vec - vec2(0,0.001));
+	return cross(u,v);
+}vec3 getMovingPlaneNormal(vec2 vec){
+	vec3 u = getMovingPlane(vec + vec2(0.001,0))-getMovingPlane(vec - vec2(0.001,0));
+	vec3 v = getMovingPlane(vec + vec2(0,0.001))-getMovingPlane(vec - vec2(0,0.001));
 	return cross(u,v);
 }
 
@@ -114,12 +134,15 @@ void main() {
 	if(type == 1.0){
 
 		if(teleso==1.0){
-			pos4 =  vec4(getWTF(pos), 1.0);
-			normal = mat3(view)*getWTFNormal(pos);
+			pos4 =  vec4(getParsur(pos), 1.0);
+			normal = mat3(view)*getParsurNormal(pos);
 		}
 		else if (teleso == 0.0){
 		pos4 = vec4(getWeirdSphere(pos), 1.0);
 		normal = mat3(view)*getWeirdSphereNormal(pos);
+		}else if (teleso == 2.0){
+			pos4 = vec4(getMovingPlane(pos), 1.0);
+			normal = mat3(view)*getMovingPlaneNormal(pos);
 		}
 	}else if(type==0){
 		pos4 = vec4(getPlane(pos),1);
