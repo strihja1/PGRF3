@@ -12,7 +12,6 @@ import org.lwjgl.opengl.GL30;
 import transforms.*;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.nio.DoubleBuffer;
 
 import static org.lwjgl.glfw.GLFW.*;
@@ -28,10 +27,9 @@ import static org.lwjgl.opengl.GL20C.*;
 public class Renderer extends AbstractRenderer {
     private OGLBuffers buffers;
     private int locView, locPosX, locPosZ, locPosY, locProjection, locTime, locViewLight, shaderProgramLight, shaderProgramViewer, locProjectionLight, locTimeLight, locTypeLight, locLightVP, locTeleso, locTelesoLight;
-    double ox, oy;
-    boolean mouseButton1 = false;
+    private double ox, oy;
+    private boolean mouseButton1 = false;
     private Camera cam, camLight;
-   // private Mat4PerspRH projection;
     private Mat4 projection;
     private float time;
     private OGLRenderTarget renderTarget;
@@ -40,9 +38,6 @@ public class Renderer extends AbstractRenderer {
     private float teleso = 0.0f;
     private boolean wiredView, pause = false;
     private OGLTexture2D textureMosaic;
-    private int slunceX = 0;
-    private int slunceY = 0;
-    private int slunceZ = 0;
     private boolean perspectiveProjection = true;
 
 
@@ -90,7 +85,7 @@ public class Renderer extends AbstractRenderer {
         } catch (IOException e) {
             e.printStackTrace();
         }
-
+        int slunceX = 0, slunceY = 0, slunceZ = 0;
         camLight = new Camera().withPosition(new Vec3D(slunceX, slunceY, slunceZ)).withAzimuth(5 / 4f * Math.PI).withZenith(-1 / 5f * Math.PI).withFirstPerson(false).withRadius(6);
         cam = new Camera().withPosition(new Vec3D(0, 0, 0)).withAzimuth(5 / 4f * Math.PI).withZenith(-1 / 5f * Math.PI).withFirstPerson(false).withRadius(6);
         setPerspectiveProjection();
@@ -167,7 +162,7 @@ public class Renderer extends AbstractRenderer {
 
         buffers.draw(GL_TRIANGLE_STRIP, shaderProgramViewer);
         glUniform1f(locType, 2);
-        if (pause == false)
+        if (!pause)
             camLight = camLight.addAzimuth(0.01);
         glUniform1f(locPosX, (float) camLight.getEye().getX());
         glUniform1f(locPosY, (float) camLight.getEye().getY());
@@ -210,11 +205,7 @@ public class Renderer extends AbstractRenderer {
                         cam = cam.mulRadius(0.9f);
                         break;
                     case GLFW_KEY_F:
-                        if (wiredView) {
-                            wiredView = false;
-                        } else {
-                            wiredView = true;
-                        }
+                        wiredView = !wiredView;
                         break;
                     case GLFW_KEY_L:
                         camLight = camLight.addAzimuth(0.1);
@@ -234,11 +225,7 @@ public class Renderer extends AbstractRenderer {
 
                         break;
                     case GLFW_KEY_P:
-                        if (pause == false) {
-                            pause = true;
-                        } else {
-                            pause = false;
-                        }
+                        pause = !pause;
                         break;
                 }
             }
@@ -281,8 +268,8 @@ public class Renderer extends AbstractRenderer {
                 glfwGetCursorPos(window, xBuffer, yBuffer);
                 double x = xBuffer.get(0);
                 double y = yBuffer.get(0);
-                cam = cam.addAzimuth((double) Math.PI * (ox - x) / width)
-                        .addZenith((double) Math.PI * (oy - y) / width);
+                cam = cam.addAzimuth( Math.PI * (ox - x) / width)
+                        .addZenith( Math.PI * (oy - y) / width);
                 ox = x;
                 oy = y;
             }
@@ -293,8 +280,8 @@ public class Renderer extends AbstractRenderer {
         @Override
         public void invoke(long window, double x, double y) {
             if (mouseButton1) {
-                cam = cam.addAzimuth((double) Math.PI * (ox - x) / width)
-                        .addZenith((double) Math.PI * (oy - y) / width);
+                cam = cam.addAzimuth( Math.PI * (ox - x) / width)
+                        .addZenith( Math.PI * (oy - y) / width);
                 ox = x;
                 oy = y;
             }
@@ -313,7 +300,7 @@ public class Renderer extends AbstractRenderer {
     };
 
     private void changeProjection(){
-        if(perspectiveProjection == true){
+        if(perspectiveProjection){
             setOrtho();
         }else{
             setPerspectiveProjection();
