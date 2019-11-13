@@ -117,11 +117,11 @@ public abstract class AbstractRenderer {
 		}
 		
 	};
-	
+
 	protected GLFWCursorPosCallback cpCallbacknew = new GLFWCursorPosCallback() {
         @Override
         public void invoke(long window, double x, double y) {
-        	System.out.println("Coursor position [" + x + ", " + y + "]");
+        //	System.out.println("Coursor position [" + x + ", " + y + "]");
     	}
     };
     
