@@ -26,7 +26,7 @@ import static org.lwjgl.opengl.GL20C.*;
  */
 public class Renderer extends AbstractRenderer {
     private OGLBuffers buffers;
-    private int locView, locPosX, locPosZ, locPosY, locProjection, locTime, locViewLight, shaderProgramLight, shaderProgramViewer, locProjectionLight, locTimeLight, locTypeLight, locLightVP, locTeleso, locTelesoLight;
+    private int locView, locPosX, locPosZ, locPosY, locProjection, locTime, locViewLight, shaderProgramLight, shaderProgramViewer, locProjectionLight, locTimeLight, locTypeLight, locLightVP, locTeleso, locTelesoLight, locMode;
     private double ox, oy;
     private boolean mouseButton1 = false;
     private Camera cam, camLight;
@@ -36,6 +36,7 @@ public class Renderer extends AbstractRenderer {
     private OGLTexture2D.Viewer viewer;
     private int locType;
     private float teleso = 0.0f;
+    private float mode = 0.0f;
     private boolean wiredView, pause = false;
     private OGLTexture2D textureMosaic;
     private boolean perspectiveProjection = true;
@@ -57,6 +58,7 @@ public class Renderer extends AbstractRenderer {
         locType = glGetUniformLocation(shaderProgramViewer, "type");
         locLightVP = glGetUniformLocation(shaderProgramViewer, "lightViewProjection");
         locTeleso = glGetUniformLocation(shaderProgramViewer, "teleso");
+        locMode = glGetUniformLocation(shaderProgramViewer, "mode");
 
         locViewLight = glGetUniformLocation(shaderProgramLight, "view");
         locProjectionLight = glGetUniformLocation(shaderProgramLight, "projection");
@@ -155,6 +157,8 @@ public class Renderer extends AbstractRenderer {
         } else {
             glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
         }
+        glUniform1f(locMode, mode);
+
         buffers.draw(GL_TRIANGLE_STRIP, shaderProgramViewer);
 
         glUniform1f(locType, 1);
@@ -222,7 +226,13 @@ public class Renderer extends AbstractRenderer {
                         } else {
                             teleso = 0;
                         }
-
+                        break;
+                    case GLFW_KEY_M:
+                        if (mode < 5) {
+                            mode++;
+                        } else {
+                            mode = 0;
+                        }
                         break;
                     case GLFW_KEY_P:
                         pause = !pause;

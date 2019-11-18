@@ -55,7 +55,7 @@ vec3 getWeirdSphere(vec2 vec){
 }
 
 vec3 getParsur(vec2 vec){
-	float s = 2*pi*vec.x;
+	float s = pi*vec.x;
 	float t = vec.y;
 	float x = t* cos(s);
 	float y =  t * sin(s);
