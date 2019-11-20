@@ -24,7 +24,7 @@ varying float dist;
 
 
 void main() {
-    vec4 ambient = vec4(vec3(0.15), 1);
+    vec4 ambient = vec4(vec3(0.3), 1);
     float NdotL = max(0, dot(normalize(normal), normalize(light)));
     vec4 diffuse = vec4(NdotL*vec3(0.35), 1);
     vec3 halfVector = normalize(normalize(light)+normalize(viewDirection));

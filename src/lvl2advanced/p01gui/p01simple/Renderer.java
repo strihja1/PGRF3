@@ -42,6 +42,7 @@ public class Renderer extends AbstractRenderer {
     private OGLTexture2D textureMosaic;
     private boolean perspectiveProjection = true;
     private boolean malyGrid = false;
+    private int gridM = 100, gridN = 100;
 
 
 
@@ -107,17 +108,21 @@ public class Renderer extends AbstractRenderer {
     public void display() {
 
         renderFromLight();
-
         renderFromViewer();
-
 
         glViewport(0, 0, width, height);
         viewer.view(renderTarget.getColorTexture(), -1, 0, 0.5);
         viewer.view(renderTarget.getDepthTexture(), -1, -0.5, 0.5);
 
         textRenderer.clear();
-        textRenderer.addStr2D(3, 20, "ahoj");
-        textRenderer.addStr2D(width-90, height-3, " (c) PGRF UHK");
+        textRenderer.addStr2D(3, 20, "Move - WSAD, Camera - LMB + drag");
+        textRenderer.addStr2D(3, 35, "F: "+ wiredView());
+        textRenderer.addStr2D(3, 50, "C: reflector light: "+ reflector());
+        if(reflector)
+            textRenderer.addStr2D(112, 50, ", reflector size+: H, reflector size-: J");
+
+        textRenderer.addStr2D(3, 65, "X: Grid Size - "+ gridM + "x" + gridN);
+        textRenderer.addStr2D(width-90, height-3, " (c) Bc. Jakub Střihavka");
         textRenderer.draw();
         glEnable(GL_DEPTH_TEST);
     }
@@ -224,9 +229,6 @@ public class Renderer extends AbstractRenderer {
                         break;
                     case GLFW_KEY_SPACE:
                         cam = cam.withFirstPerson(!cam.getFirstPerson());
-                        break;
-                    case GLFW_KEY_R:
-                        cam = cam.mulRadius(0.9f);
                         break;
                     case GLFW_KEY_F:
                         wiredView = !wiredView;
@@ -359,12 +361,31 @@ public class Renderer extends AbstractRenderer {
         perspectiveProjection = false;
     }
 
-    private void changeGridSize(){
-        if(malyGrid)
-            buffers = GridFactory.generateGridTriangleStrip(10, 10);
+   private String wiredView(){
+        if(wiredView)
+            return "Wired View";
         else
-            buffers = GridFactory.generateGridTriangleStrip(100, 100);
+            return "Filled View";
     }
+    private String reflector(){
+        if(reflector)
+            return "ON";
+        else
+            return "OFF";
+    }
+
+    private void changeGridSize(){
+        if(malyGrid) {
+            gridM = 10;
+            gridN = 10;
+        }
+        else{
+            gridM= 100;
+            gridN= 100;
+        }
+            buffers = GridFactory.generateGridTriangleStrip(gridM,gridN);
+    }
+
 
     @Override
     public GLFWKeyCallback getKeyCallback() {
