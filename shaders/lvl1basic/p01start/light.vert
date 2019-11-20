@@ -10,6 +10,7 @@ uniform float type;
 uniform float teleso;
 
 uniform float pi = 3.14159265359;
+
 float getZ(vec2 vec){
 	return sin(time + vec.y*pi);
 }
@@ -26,7 +27,6 @@ vec3 getSphere(vec2 vec){
 }
 
 
-
 vec3 getWTF(vec2 vec){
 	/*	float az = vec.x * 3.14f;
         float ze = vec.y * 3.14f/2;
@@ -40,7 +40,7 @@ vec3 getWTF(vec2 vec){
 	float x = vec.x;
 	float y = vec.y;
 	float z = sin(time+x);
-	return vec3(x,y,z);
+	return vec3(x, y, z);
 }
 
 vec3 getWeirdSphere(vec2 vec){
@@ -53,7 +53,18 @@ vec3 getWeirdSphere(vec2 vec){
 	float z =       r * sin(ze);
 	return vec3(x, y, z);
 }
+vec3 getBumpySphere(vec2 vec){
+	float s = vec.x * pi/2;
+	float t = vec.y * pi;
+	float rho = 1+0.2*sin(6*s)*sin(5*t);
+	float phi = t;
+	float theta = s;
 
+	float x = rho * cos(phi) * cos(theta);
+	float y =    rho * sin(phi) * cos(theta);
+	float z =       rho * sin(theta);
+	return vec3(x, y, z);
+}
 vec3 getParsur(vec2 vec){
 	float s = pi*vec.x;
 	float t = vec.y;
@@ -63,11 +74,29 @@ vec3 getParsur(vec2 vec){
 	return vec3(x, y, z);
 }
 
+vec3 getCylinder(vec2 vec){
+	float s = pi*vec.x;
+	float t = vec.y;
+	float r = 1;
+	float theta =  s;
+	float z = t;
+	return vec3(r*cos(theta), r*sin(theta), z);
+}
+vec3 getTrophy(vec2 vec) {
+	float s = pi*vec.x;
+	float t = pi*vec.y;
+	float r = (1-max(sin(t),0))*2;
+	float theta =  -s;
+	float z = 3-t;
+	return vec3(r*cos(theta)/3, r*sin(theta)/3, z/3-1);
+}
+
+
 vec3 getPlane(vec2 vec){
-	return vec3(vec*4,-1);
+	return vec3(vec*4, -1);
 }
 vec3 getMovingPlane(vec2 vec){
-	return vec3(vec,getZ(vec));
+	return vec3(vec*cos(vec.x), getZ(vec));
 }
 
 
@@ -94,7 +123,7 @@ void main() {
 
 }*/
 
-	if(type == 1.0){
+/*	if(type == 1.0){
 
 		if(teleso==1.0){
 			pos4 =  vec4(getParsur(pos), 1.0);
@@ -106,6 +135,31 @@ void main() {
 		}
 	}else if(type==0){
 		pos4 = vec4(getPlane(pos),1);
+
+	}*/
+
+	if (type == 1.0){
+
+		if (teleso==1.0){
+			pos4 =  vec4(getParsur(pos), 1.0);
+		}
+		else if (teleso == 0.0){
+			pos4 = vec4(getWeirdSphere(pos), 1.0);
+		}
+		else if (teleso == 2.0){
+			pos4 = vec4(getMovingPlane(pos), 1.0);
+		}
+		else if (teleso == 3.0){
+			pos4 = vec4(getCylinder(pos), 1.0);
+		}
+		else if (teleso == 4.0){
+			pos4 = vec4(getTrophy(pos), 1.0);
+		}
+		else if (teleso == 5.0){
+			pos4 = vec4(getBumpySphere(pos), 1.0);
+		}
+	} else if (type==0){
+		pos4 = vec4(getPlane(pos), 1);
 
 	}
 

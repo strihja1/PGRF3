@@ -26,7 +26,7 @@ import static org.lwjgl.opengl.GL20C.*;
  */
 public class Renderer extends AbstractRenderer {
     private OGLBuffers buffers;
-    private int locView, locPosX, locPosZ, locPosY, locProjection, locTime, locViewLight, shaderProgramLight, shaderProgramViewer, locProjectionLight, locTimeLight, locTypeLight, locLightVP, locTeleso, locTelesoLight, locMode;
+    private int locView, locPosX, locPosZ, locReflector, locSpotCutOff,locViewLightVertex, locPosY, locProjection, locTime, locViewLight, shaderProgramLight, shaderProgramViewer, locProjectionLight, locTimeLight, locTypeLight, locLightVP, locTeleso, locTelesoLight, locMode;
     private double ox, oy;
     private boolean mouseButton1 = false;
     private Camera cam, camLight;
@@ -37,9 +37,13 @@ public class Renderer extends AbstractRenderer {
     private int locType;
     private float teleso = 0.0f;
     private float mode = 0.0f;
-    private boolean wiredView, pause = false;
+    private float spotCutOff = 0.6f;
+    private boolean wiredView, reflector, pause = false;
     private OGLTexture2D textureMosaic;
     private boolean perspectiveProjection = true;
+    private boolean malyGrid = false;
+
+
 
 
     @Override
@@ -53,12 +57,15 @@ public class Renderer extends AbstractRenderer {
         shaderProgramLight = ShaderUtils.loadProgram("/lvl1basic/p01start/light");
 
         locView = glGetUniformLocation(shaderProgramViewer, "view");
+        locViewLightVertex = glGetUniformLocation(shaderProgramViewer, "viewLight");
         locProjection = glGetUniformLocation(shaderProgramViewer, "projection");
         locTime = glGetUniformLocation(shaderProgramViewer, "time");
         locType = glGetUniformLocation(shaderProgramViewer, "type");
         locLightVP = glGetUniformLocation(shaderProgramViewer, "lightViewProjection");
         locTeleso = glGetUniformLocation(shaderProgramViewer, "teleso");
         locMode = glGetUniformLocation(shaderProgramViewer, "mode");
+        locSpotCutOff = glGetUniformLocation(shaderProgramViewer, "spotCutOff");
+        locReflector = glGetUniformLocation(shaderProgramViewer, "reflector");
 
         locViewLight = glGetUniformLocation(shaderProgramLight, "view");
         locProjectionLight = glGetUniformLocation(shaderProgramLight, "projection");
@@ -73,7 +80,6 @@ public class Renderer extends AbstractRenderer {
         //práce s ogl soubory - textury ze souboru
         //new OGLModelOBJ(aa=new OGLModelOBJ("cesta k modelu").getBuffers());
         //aa.draw(GL_TRIANGLES, ...);
-
 
         buffers = GridFactory.generateGridTriangleStrip(100, 100);
         //glFrontFace(GL_CCW); jak budou trojúhelníčky
@@ -93,6 +99,7 @@ public class Renderer extends AbstractRenderer {
         setPerspectiveProjection();
 
 
+        textRenderer = new OGLTextRenderer(width, height);
     }
 
 
@@ -103,9 +110,16 @@ public class Renderer extends AbstractRenderer {
 
         renderFromViewer();
 
+
         glViewport(0, 0, width, height);
         viewer.view(renderTarget.getColorTexture(), -1, 0, 0.5);
         viewer.view(renderTarget.getDepthTexture(), -1, -0.5, 0.5);
+
+        textRenderer.clear();
+        textRenderer.addStr2D(3, 20, "ahoj");
+        textRenderer.addStr2D(width-90, height-3, " (c) PGRF UHK");
+        textRenderer.draw();
+        glEnable(GL_DEPTH_TEST);
     }
 
     private void renderFromLight() {
@@ -145,11 +159,18 @@ public class Renderer extends AbstractRenderer {
         glClearColor(0.5f, 0, 0, 1);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);  //vyčištění barvy a zbufferu
         glUniformMatrix4fv(locView, false, cam.getViewMatrix().floatArray());
+        glUniformMatrix4fv(locViewLightVertex, false, camLight.getViewMatrix().floatArray());
         glUniformMatrix4fv(locProjection, false, projection.floatArray());
         textureMosaic.bind(shaderProgramViewer, "textureMosaic", 0);
         glUniformMatrix4fv(locLightVP, false, camLight.getViewMatrix().mul(projection).floatArray());
         renderTarget.getDepthTexture().bind(shaderProgramViewer, "depthTexture", 1);
         time += 0.1;
+        glUniform1f(locSpotCutOff, spotCutOff);
+        if(reflector) {
+            glUniform1f(locReflector, 1.0f);
+        }else{
+            glUniform1f(locReflector, 0.0f);
+        }
         glUniform1f(locTime, time);
         glUniform1f(locType, 0);
         if (wiredView) {
@@ -162,12 +183,11 @@ public class Renderer extends AbstractRenderer {
         buffers.draw(GL_TRIANGLE_STRIP, shaderProgramViewer);
 
         glUniform1f(locType, 1);
-        //  buffers.draw(GL_TRIANGLES, shaderProgramViewer);   duplicita?
 
         buffers.draw(GL_TRIANGLE_STRIP, shaderProgramViewer);
         glUniform1f(locType, 2);
         if (!pause)
-            camLight = camLight.addAzimuth(0.01);
+            camLight = camLight.addAzimuth(-0.01);
         glUniform1f(locPosX, (float) camLight.getEye().getX());
         glUniform1f(locPosY, (float) camLight.getEye().getY());
         glUniform1f(locPosZ, (float) camLight.getEye().getZ());
@@ -217,6 +237,12 @@ public class Renderer extends AbstractRenderer {
                     case GLFW_KEY_K:
                         camLight = camLight.addAzimuth(-0.1);
                         break;
+                    case GLFW_KEY_H:
+                        spotCutOff = spotCutOff-0.05f;
+                        break;
+                    case GLFW_KEY_J:
+                        spotCutOff = spotCutOff+0.05f;
+                        break;
                     case GLFW_KEY_B:
                       changeProjection();
                         break;
@@ -228,7 +254,7 @@ public class Renderer extends AbstractRenderer {
                         }
                         break;
                     case GLFW_KEY_M:
-                        if (mode < 5) {
+                        if (mode < 6) {
                             mode++;
                         } else {
                             mode = 0;
@@ -236,6 +262,13 @@ public class Renderer extends AbstractRenderer {
                         break;
                     case GLFW_KEY_P:
                         pause = !pause;
+                        break;
+                    case GLFW_KEY_C:
+                        reflector = !reflector;
+                        break;
+                    case GLFW_KEY_X:
+                        malyGrid = !malyGrid;
+                        changeGridSize();
                         break;
                 }
             }
@@ -326,6 +359,13 @@ public class Renderer extends AbstractRenderer {
         perspectiveProjection = false;
     }
 
+    private void changeGridSize(){
+        if(malyGrid)
+            buffers = GridFactory.generateGridTriangleStrip(10, 10);
+        else
+            buffers = GridFactory.generateGridTriangleStrip(100, 100);
+    }
+
     @Override
     public GLFWKeyCallback getKeyCallback() {
         return keyCallback;
@@ -354,6 +394,6 @@ public class Renderer extends AbstractRenderer {
 }
 
 // TODO Vytvořte vhodné pixelové programy pro zobrazení povrchu těles znázorňující barevně pozici (souřadnici xyz, hloubku), barvu, texturu, normálu a souřadnice do textury.
-// TODO Reflektorový zdroj světla a útlum prostředí. Implementujte hladký přechod na okraji reflektorového světla.
+// TODO Reflektorový zdroj světla a útlum prostředí. Implementujte hladký přechod na okraji reflektoro  vého světla.
 // TODO Na vhodných tělesech znázorněte rozdíl mezi výpočtem osvětlení per vertex a per pixel.
 // TODO ??? Implementujte metodu pro výpočet vržených stínů ShadowMaps. Uvažujte alespoň jeden pohybující se zdroj světla a dvě různá zároveň zobrazená tělesa. Alespoň jedno těleso se musí pohybovat. Pro znázornění vržených stínu vykreslete rovinnou podložku s vypočteným osvětlením. ????
