@@ -18,6 +18,7 @@ uniform float type;
 uniform float teleso;
 uniform float posX, posY, posZ;
 out vec2 pos;
+
 uniform float pi = 3.14159265359;
 uniform float mode;
 varying float dist;
