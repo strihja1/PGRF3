@@ -34,7 +34,6 @@ void main() {
     vec4 textureColor = texture(textureMosaic, texCoord);
     float zL = texture(depthTexture, depthTextureCoord.xy).r;// R G i B složky jsou stejné, protože gl_fragcoord.zzz
     float zA = depthTextureCoord.z;
-
     bool shadow = zL < zA - 0.005;
 
     if (shadow){
@@ -65,16 +64,14 @@ void main() {
     if (mode == 2.0f){
         outColor = normalize(vec4(normalize(vertColor), 1));
     }
-
-if (mode == 3.0f){
+    if (mode == 3.0f){
     outColor = normalize(vec4(texCoord,0,1));
-}
+    }
     if (mode == 4.0f){
         outColor = depthTextureCoord;
     }
 
     if(mode==5.0f){
-
         vec4 color;
         if (intensity>0.95) color=vec4(1.0,0.5,0.5,1.0);
         else if (intensity>0.8) color=vec4(0.6,0.3,0.3,1.0);
@@ -94,7 +91,5 @@ if (mode == 3.0f){
         else color=vec4(0.2,0.1,0.1,1.0);
         outColor = vec4(color);
     }
-
-
 }
 

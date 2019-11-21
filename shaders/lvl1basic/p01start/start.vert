@@ -1,9 +1,9 @@
 #version 150
-in vec2 inPosition;// input from the vertex buffer
+in vec2 inPosition;
 uniform mat4 view;
 uniform mat4 viewLight;
 uniform mat4 projection;
-uniform float time;// in je pro každý vrchol jiný, uniform je stejný
+uniform float time;
 uniform mat4 lightViewProjection;
 out vec3 vertColor;
 out vec3 normal;
@@ -18,7 +18,6 @@ uniform float type;
 uniform float teleso;
 uniform float posX, posY, posZ;
 out vec2 pos;
-
 uniform float pi = 3.14159265359;
 uniform float mode;
 varying float dist;
@@ -46,21 +45,12 @@ vec3 getSun(vec2 vec){
     float r = 0.3;
 
     float x = posX+ r * cos(az) * cos(ze);
-    float y =   posY+ r * sin(az) * cos(ze);
-    float z =     posZ + r * sin(ze);
+    float y = posY+ r * sin(az) * cos(ze);
+    float z = posZ + r * sin(ze);
     return vec3(x, y, z);
 }
 
 vec3 getWTF(vec2 vec){
-    /*	float az = vec.x * 3.14f;
-        float ze = vec.y * 3.14f/2;
-        float r = 1;
-
-        float x = r * cos(az) * cos(ze);
-        float y = r * sin(az) * cos(ze);
-        float z = sin(time+vec.y);
-        return vec3(x, y, z);*/
-
     float x = vec.x;
     float y = vec.y;
     float z = sin(time+x);
@@ -73,8 +63,8 @@ vec3 getWeirdSphere(vec2 vec){
     float r = 1;
 
     float x = r * cos(az) * cos(ze);
-    float y =  2*  r * sin(az) * cos(ze);
-    float z =       r * sin(ze);
+    float y = 2*  r * sin(az) * cos(ze);
+    float z = r * sin(ze);
     return vec3(x, y, z);
 }
 
@@ -98,7 +88,7 @@ vec3 getCylinder(vec2 vec){
 vec3 getTrophy(vec2 vec) {
     float s = pi*vec.x;
     float t = pi*vec.y;
-    float r = (1-max(sin(t),0))*2;
+    float r = (1-max(sin(t), 0))*2;
     float theta =  -s;
     float z = 3-t;
     return vec3(r*cos(theta)/3, r*sin(theta)/3, z/3-1);
@@ -112,8 +102,8 @@ vec3 getBumpySphere(vec2 vec){
     float theta = s;
 
     float x = rho * cos(phi) * cos(theta);
-    float y =    rho * sin(phi) * cos(theta);
-    float z =       rho * sin(theta);
+    float y = rho * sin(phi) * cos(theta);
+    float z = rho * sin(theta);
     return vec3(x, y, z);
 }
 
@@ -190,7 +180,6 @@ void main() {
     vec2 pos = inPosition *2-1;// je od -1 do +1
     vec4 pos4;
 
-    //vec4 pos4 = vec4(pos, getZ(pos), 1.0);
     // type 1 - objekty
     // type 2 - podstava
     // type 3 - slunce
@@ -235,25 +224,17 @@ void main() {
     vec3 lightPos = vec3(1, 1, 1);
     light = lightPos - (view* pos4).xyz;
     lightSpot= lightPos-(viewLight*pos4).xyz;
-
-    //viewDirection = -pos4.xyz;
     viewDirection= - (view* pos4).xyz;
     spotDirection = -(lightViewProjection*pos4).xyz;
     texCoord = inPosition;
-
     depthTextureCoord = lightViewProjection * pos4;
     depthTextureCoord.xyz = depthTextureCoord.xyz/ depthTextureCoord.w;
     depthTextureCoord.xyz = (depthTextureCoord.xyz+1)/2;
     vertColor = pos4.xyz;
     lightDistance = length(-(viewLight*pos4).xyz);
     dist = length(viewDirection);
-
     if (mode==5.0f){
-
-		intensity = dot(normalize(lightSpot), normalize(normal));
-		vertColor = vec3(normal.xyz);
-
-	}
-
-
+        intensity = dot(normalize(lightSpot), normalize(normal));
+        vertColor = vec3(normal.xyz);
+    }
 }

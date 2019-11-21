@@ -44,17 +44,11 @@ public class Renderer extends AbstractRenderer {
     private boolean malyGrid = false;
     private int gridM = 100, gridN = 100;
 
-
-
-
     @Override
     public void init() {
         glClearColor(0.1f, 0.1f, 0.1f, 1);
         glEnable(GL_DEPTH_TEST);
-
-
         shaderProgramViewer = ShaderUtils.loadProgram("/lvl1basic/p01start/start");
-
         shaderProgramLight = ShaderUtils.loadProgram("/lvl1basic/p01start/light");
 
         locView = glGetUniformLocation(shaderProgramViewer, "view");
@@ -77,18 +71,10 @@ public class Renderer extends AbstractRenderer {
         locPosZ = glGetUniformLocation(shaderProgramViewer, "posZ");
 
         locTelesoLight = glGetUniformLocation(shaderProgramLight, "teleso");
-
-        //práce s ogl soubory - textury ze souboru
-        //new OGLModelOBJ(aa=new OGLModelOBJ("cesta k modelu").getBuffers());
-        //aa.draw(GL_TRIANGLES, ...);
-
         buffers = GridFactory.generateGridTriangleStrip(100, 100);
-        //glFrontFace(GL_CCW); jak budou trojúhelníčky
-
         renderTarget = new OGLRenderTarget(1024, 1024);
         viewer = new OGLTexture2D.Viewer();
         System.out.println("loading texture");
-
         try {
             textureMosaic = new OGLTexture2D("./textures/mosaic.jpg");
         } catch (IOException e) {
@@ -98,12 +84,8 @@ public class Renderer extends AbstractRenderer {
         camLight = new Camera().withPosition(new Vec3D(slunceX, slunceY, slunceZ)).withAzimuth(5 / 4f * Math.PI).withZenith(-1 / 5f * Math.PI).withFirstPerson(false).withRadius(6);
         cam = new Camera().withPosition(new Vec3D(0, 0, 0)).withAzimuth(5 / 4f * Math.PI).withZenith(-1 / 5f * Math.PI).withFirstPerson(false).withRadius(6);
         setPerspectiveProjection();
-
-
         textRenderer = new OGLTextRenderer(width, height);
     }
-
-
     @Override
     public void display() {
 
@@ -111,18 +93,33 @@ public class Renderer extends AbstractRenderer {
         renderFromViewer();
 
         glViewport(0, 0, width, height);
-        viewer.view(renderTarget.getColorTexture(), -1, 0, 0.5);
-        viewer.view(renderTarget.getDepthTexture(), -1, -0.5, 0.5);
+        viewer.view(renderTarget.getColorTexture(), -1, -0.7, 0.3);
+        viewer.view(renderTarget.getDepthTexture(), -1, -1, 0.3);
 
         textRenderer.clear();
-        textRenderer.addStr2D(3, 20, "Move - WSAD, Camera - LMB + drag");
-        textRenderer.addStr2D(3, 35, "F: "+ wiredView());
-        textRenderer.addStr2D(3, 50, "C: reflector light: "+ reflector());
-        if(reflector)
-            textRenderer.addStr2D(112, 50, ", reflector size+: H, reflector size-: J");
+        int poziceY = 20;
+        textRenderer.addStr2D(3, poziceY, "[WSAD] - Move, [SHIFT/CTRL] - up/down, LMB + drag - Camera rotation");
+        poziceY=poziceY+15;
+        textRenderer.addStr2D(3, poziceY, "[F]: "+ wiredView());
+        poziceY=poziceY+15;
+        textRenderer.addStr2D(3, poziceY, "[C]: reflector light: "+ reflector());
+        if(reflector) {
+            textRenderer.addStr2D(112, poziceY, ", reflector size+: H, reflector size-: J");
+        }
+        poziceY += 15;
+        textRenderer.addStr2D(3, poziceY, "[X]: Grid Size - "+ gridM + "x" + gridN);
+        poziceY += 15;
+        textRenderer.addStr2D(3, poziceY, "[V]: Perspective/Orthogonal view - "+ currentView());
+        poziceY += 15;
+        textRenderer.addStr2D(3, poziceY, "[SPACE]: First/Third person camera - "+ currentCameraView());
+        poziceY += 15;
+        textRenderer.addStr2D(3, poziceY, "[T]: Object - " + (int)teleso);
+        poziceY += 15;
+        textRenderer.addStr2D(3, poziceY, "[P]: Time: " + currentTimeString());
+        poziceY += 15;
+        textRenderer.addStr2D(3, poziceY, "[M]: Mode: "+currentModeString());
 
-        textRenderer.addStr2D(3, 65, "X: Grid Size - "+ gridM + "x" + gridN);
-        textRenderer.addStr2D(width-90, height-3, " (c) Bc. Jakub Střihavka");
+        textRenderer.addStr2D(width-135, height-3, " (c) Bc. Jakub Střihavka");
         textRenderer.draw();
         glEnable(GL_DEPTH_TEST);
     }
@@ -159,9 +156,9 @@ public class Renderer extends AbstractRenderer {
         glViewport(0, 0, width, height);
 
         glUniform1f(locTeleso, teleso);
-        //defaultn9 framebuffer - render do obrazovky
+        //defaultní framebuffer - render do obrazovky
         GL30.glBindFramebuffer(GL30.GL_FRAMEBUFFER, 0);
-        glClearColor(0.5f, 0, 0, 1);
+        glClearColor(0.5f, 0.3f, 0.7f, 1);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);  //vyčištění barvy a zbufferu
         glUniformMatrix4fv(locView, false, cam.getViewMatrix().floatArray());
         glUniformMatrix4fv(locViewLightVertex, false, camLight.getViewMatrix().floatArray());
@@ -196,11 +193,7 @@ public class Renderer extends AbstractRenderer {
         glUniform1f(locPosX, (float) camLight.getEye().getX());
         glUniform1f(locPosY, (float) camLight.getEye().getY());
         glUniform1f(locPosZ, (float) camLight.getEye().getZ());
-
-
         buffers.draw(GL_TRIANGLE_STRIP, shaderProgramViewer);
-
-
     }
     private GLFWKeyCallback keyCallback = new GLFWKeyCallback() {
         @Override
@@ -233,19 +226,13 @@ public class Renderer extends AbstractRenderer {
                     case GLFW_KEY_F:
                         wiredView = !wiredView;
                         break;
-                    case GLFW_KEY_L:
-                        camLight = camLight.addAzimuth(0.1);
-                        break;
-                    case GLFW_KEY_K:
-                        camLight = camLight.addAzimuth(-0.1);
-                        break;
                     case GLFW_KEY_H:
                         spotCutOff = spotCutOff-0.05f;
                         break;
                     case GLFW_KEY_J:
                         spotCutOff = spotCutOff+0.05f;
                         break;
-                    case GLFW_KEY_B:
+                    case GLFW_KEY_V:
                       changeProjection();
                         break;
                     case GLFW_KEY_T:
@@ -361,6 +348,39 @@ public class Renderer extends AbstractRenderer {
         perspectiveProjection = false;
     }
 
+    private String currentView(){
+        if(perspectiveProjection)
+            return "Perspective projection";
+        else
+            return "Orthogonal projection";
+    }
+    private String currentModeString(){
+        switch ((int)mode) {
+            case 0:
+                return "Blinn phong with shadows";
+            case 1:
+                return "Object normal";
+            case 2:
+                return "Object vertices color";
+            case 3:
+                return "Object texture coordinations color";
+            case 4:
+                return "Object depth texture coordinations color";
+            case 5:
+                return "Per Vertex";
+            case 6:
+                return "Per Pixel";
+        }
+        return null;
+    }
+
+    private String currentCameraView(){
+        if(cam.getFirstPerson())
+            return "First person";
+        else
+            return "Third person";
+    }
+
    private String wiredView(){
         if(wiredView)
             return "Wired View";
@@ -372,6 +392,12 @@ public class Renderer extends AbstractRenderer {
             return "ON";
         else
             return "OFF";
+    }
+    private String currentTimeString(){
+        if(pause)
+            return "OFF";
+        else
+            return "ON";
     }
 
     private void changeGridSize(){
