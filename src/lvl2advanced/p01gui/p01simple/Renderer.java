@@ -1,6 +1,4 @@
 package lvl2advanced.p01gui.p01simple;
-
-
 import lwjglutils.*;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.glfw.GLFWCursorPosCallback;
@@ -10,14 +8,12 @@ import org.lwjgl.glfw.GLFWScrollCallback;
 import org.lwjgl.glfw.GLFWWindowSizeCallback;
 import org.lwjgl.opengl.GL30;
 import transforms.*;
-
 import java.io.IOException;
 import java.nio.DoubleBuffer;
 
 import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.opengl.GL11C.*;
 import static org.lwjgl.opengl.GL20C.*;
-
 
 /**
  * @author Jakub Střihavka
@@ -48,8 +44,8 @@ public class Renderer extends AbstractRenderer {
     public void init() {
         glClearColor(0.1f, 0.1f, 0.1f, 1);
         glEnable(GL_DEPTH_TEST);
-        shaderProgramViewer = ShaderUtils.loadProgram("/lvl1basic/p01start/start");
-        shaderProgramLight = ShaderUtils.loadProgram("/lvl1basic/p01start/light");
+        shaderProgramViewer = ShaderUtils.loadProgram("/start");
+        shaderProgramLight = ShaderUtils.loadProgram("/light");
 
         locView = glGetUniformLocation(shaderProgramViewer, "view");
         locViewLightVertex = glGetUniformLocation(shaderProgramViewer, "viewLight");
@@ -350,7 +346,6 @@ public class Renderer extends AbstractRenderer {
         projection = new Mat4OrthoRH(-30, -30, 0.01, 200);
         perspectiveProjection = false;
     }
-
     private String currentView(){
         if(perspectiveProjection)
             return "Perspective projection";
@@ -376,15 +371,13 @@ public class Renderer extends AbstractRenderer {
         }
         return null;
     }
-
     private String currentCameraView(){
         if(cam.getFirstPerson())
             return "First person";
         else
             return "Third person";
     }
-
-   private String wiredView(){
+    private String wiredView(){
         if(wiredView)
             return "Wired View";
         else
@@ -402,7 +395,6 @@ public class Renderer extends AbstractRenderer {
         else
             return "ON";
     }
-
     private void changeGridSize(){
         if(malyGrid) {
             gridM = 10;
@@ -414,8 +406,6 @@ public class Renderer extends AbstractRenderer {
         }
             buffers = GridFactory.generateGridTriangleStrip(gridM,gridN);
     }
-
-
     @Override
     public GLFWKeyCallback getKeyCallback() {
         return keyCallback;
