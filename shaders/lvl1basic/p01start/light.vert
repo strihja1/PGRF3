@@ -97,7 +97,9 @@ vec3 getTrophy(vec2 vec) {
 	return vec3(r*cos(theta)/3, r*sin(theta)/3, z/3-1);
 }
 
-
+vec3 getMovingPlane2(vec2 vec){
+	return vec3(vec*cos(vec.x)+1.5, getZ(vec));
+}
 vec3 getPlane(vec2 vec){
 	return vec3(vec*4, -1);
 }
@@ -139,6 +141,12 @@ void main() {
 		}
 	} else if (type==0){
 		pos4 = vec4(getPlane(pos), 1);
+	}
+	if(type==3.0){
+		if (teleso == 0.0){
+			pos4 = vec4(getMovingPlane2(pos), 1.0);
+		}
+
 	}
 	gl_Position = projection * view * pos4;
 }

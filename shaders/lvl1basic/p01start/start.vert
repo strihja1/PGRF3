@@ -129,8 +129,9 @@ vec3 getPlane(vec2 vec){
 vec3 getMovingPlane(vec2 vec){
     return vec3(vec*cos(vec.x), getZ(vec));
 }
-
-
+vec3 getMovingPlane2(vec2 vec){
+    return vec3(vec*cos(vec.x)+1.5, getZ(vec));
+}
 
 vec3 getSphereNormal(vec2 vec){
     vec3 u = getSphere(vec + vec2(0.001, 0))-getSphere(vec - vec2(0.001, 0));
@@ -186,14 +187,20 @@ vec3 getMovingPlaneNormal(vec2 vec){
     vec3 v = getMovingPlane(vec + vec2(0, 0.001))-getMovingPlane(vec - vec2(0, 0.001));
     return cross(u, v);
 }
+vec3 getMovingPlaneNormal2(vec2 vec){
+    vec3 u = getMovingPlane(vec + vec2(0.001, 0))-getMovingPlane(vec - vec2(0.001, 0));
+    vec3 v = getMovingPlane(vec + vec2(0, 0.001))-getMovingPlane(vec - vec2(0, 0.001));
+    return cross(u, v);
+}
 
 void main() {
     vec2 pos = inPosition *2-1;// je od -1 do +1
     vec4 pos4;
 
+    // type 0 - podstava
     // type 1 - objekty
-    // type 2 - podstava
-    // type 3 - slunce
+    // type 2 - slunce
+    // type 3 - druhy objekt
     if (type == 1.0){
         if (teleso == 0.0){
             pos4 = vec4(getWeirdSphere(pos), 1.0);
@@ -235,6 +242,13 @@ void main() {
         pos4 = vec4(getSun(pos), 1);
 
         normal = mat3(view)*getSphereNormal(pos);
+    }
+    if(type==3.0){
+        if (teleso == 0.0){
+            pos4 = vec4(getMovingPlane2(pos), 1.0);
+            normal = mat3(view)*getMovingPlaneNormal2(pos);
+        }
+
     }
 
     gl_Position = projection * view * pos4;
