@@ -51,10 +51,17 @@ vec3 getSun(vec2 vec){
 }
 
 vec3 getWTF(vec2 vec){
-    float x = vec.x;
-    float y = vec.y;
-    float z = sin(time+x);
+    float s = vec.x * sin(pi/2);
+    float t = vec.y * pi;
+    float rho = 1+0.2*sin(2*s)*sin(-3*t);
+    float phi = t;
+    float theta = s;
+
+    float x = rho * cos(phi) * cos(theta);
+    float y = rho * sin(phi) * cos(theta);
+    float z = rho * sin(theta);
     return vec3(x, y, z);
+
 }
 
 vec3 getWeirdSphere(vec2 vec){
@@ -74,6 +81,14 @@ vec3 getParsur(vec2 vec){
     float x = t* cos(s);
     float y =  t * sin(s);
     float z =t;
+    return vec3(x, y, z);
+}
+vec3 getParsur2(vec2 vec){
+    float s = pi*vec.x;
+    float t = vec.y;
+    float x = pow(4/3,t)*2*sin(t)*cos(s);
+    float y = pow(4/3,t)*sin(t)*sin(s);
+    float z = pow(4/3,s)*2*sin(t)*cos(t);
     return vec3(x, y, z);
 }
 
@@ -155,6 +170,11 @@ vec3 getParsurNormal(vec2 vec){
     vec3 v = getParsur(vec + vec2(0, 0.001))-getParsur(vec - vec2(0, 0.001));
     return cross(u, v);
 }
+vec3 getParsur2Normal(vec2 vec){
+    vec3 u = getParsur2(vec + vec2(0.001, 0))-getParsur2(vec - vec2(0.001, 0));
+    vec3 v = getParsur2(vec + vec2(0, 0.001))-getParsur2(vec - vec2(0, 0.001));
+    return cross(u, v);
+}
 
 vec3 getPlaneNormal(vec2 vec){
     vec3 u = getPlane(vec + vec2(0.001, 0))-getPlane(vec - vec2(0.001, 0));
@@ -167,15 +187,6 @@ vec3 getMovingPlaneNormal(vec2 vec){
     return cross(u, v);
 }
 
-vec3 normalCalculation (vec2 pos){
-    vec3 testNormal;
-    float distance2 = pos.x*pos.x+pos.y*pos.y;
-    testNormal.x = -pi*sin(sqrt(distance2))/distance2*pos.x;
-    testNormal.y = -pi*sin(sqrt(distance2))/distance2*pos.y;
-    testNormal.z = 1.0;
-    return testNormal;
-}
-
 void main() {
     vec2 pos = inPosition *2-1;// je od -1 do +1
     vec4 pos4;
@@ -184,14 +195,13 @@ void main() {
     // type 2 - podstava
     // type 3 - slunce
     if (type == 1.0){
-
-        if (teleso==1.0){
-            pos4 =  vec4(getParsur(pos), 1.0);
-            normal = mat3(view)*getParsurNormal(pos);
-        }
-        else if (teleso == 0.0){
+        if (teleso == 0.0){
             pos4 = vec4(getWeirdSphere(pos), 1.0);
             normal = mat3(view)*getWeirdSphereNormal(pos);
+        }
+        else if (teleso==1.0){
+            pos4 =  vec4(getParsur(pos), 1.0);
+            normal = mat3(view)*getParsurNormal(pos);
         }
         else if (teleso == 2.0){
             pos4 = vec4(getMovingPlane(pos), 1.0);
@@ -208,6 +218,14 @@ void main() {
         else if (teleso == 5.0){
             pos4 = vec4(getBumpySphere(pos), 1.0);
             normal = mat3(view)*getBumpySphereNormal(pos);
+        }
+        else if (teleso == 6.0){
+            pos4 = vec4(getWTF(pos), 1.0);
+            normal = mat3(view)*getWTFNormal(pos);
+        }
+        else if (teleso == 7.0){
+            pos4 = vec4(getParsur2(pos), 1.0);
+            normal = mat3(view)*getParsur2Normal(pos);
         }
     } else if (type==0){
         pos4 = vec4(getPlane(pos), 1);

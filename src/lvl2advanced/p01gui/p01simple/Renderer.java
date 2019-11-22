@@ -20,9 +20,9 @@ import static org.lwjgl.opengl.GL20C.*;
 
 
 /**
- * @author PGRF FIM UHK
- * @version 2.0
- * @since 2019-09-02
+ * @author Jakub Střihavka
+ * @version 1.0
+ * @since 2019-11-22
  */
 public class Renderer extends AbstractRenderer {
     private OGLBuffers buffers;
@@ -154,12 +154,10 @@ public class Renderer extends AbstractRenderer {
     private void renderFromViewer() {
         glUseProgram(shaderProgramViewer);
         glViewport(0, 0, width, height);
-
         glUniform1f(locTeleso, teleso);
-        //defaultní framebuffer - render do obrazovky
         GL30.glBindFramebuffer(GL30.GL_FRAMEBUFFER, 0);
         glClearColor(0.5f, 0.3f, 0.7f, 1);
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);  //vyčištění barvy a zbufferu
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         glUniformMatrix4fv(locView, false, cam.getViewMatrix().floatArray());
         glUniformMatrix4fv(locViewLightVertex, false, camLight.getViewMatrix().floatArray());
         glUniformMatrix4fv(locProjection, false, projection.floatArray());
@@ -199,7 +197,7 @@ public class Renderer extends AbstractRenderer {
         @Override
         public void invoke(long window, int key, int scancode, int action, int mods) {
             if (key == GLFW_KEY_ESCAPE && action == GLFW_RELEASE)
-                glfwSetWindowShouldClose(window, true); // We will detect this in the rendering loop
+                glfwSetWindowShouldClose(window, true);
             if (action == GLFW_PRESS || action == GLFW_REPEAT) {
                 switch (key) {
                     case GLFW_KEY_W:
@@ -236,7 +234,7 @@ public class Renderer extends AbstractRenderer {
                       changeProjection();
                         break;
                     case GLFW_KEY_T:
-                        if (teleso < 5) {
+                        if (teleso < 7) {
                             teleso++;
                         } else {
                             teleso = 0;
@@ -283,7 +281,6 @@ public class Renderer extends AbstractRenderer {
         @Override
         public void invoke(long window, int button, int action, int mods) {
             mouseButton1 = glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_1) == GLFW_PRESS;
-
             if (button == GLFW_MOUSE_BUTTON_1 && action == GLFW_PRESS) {
                 mouseButton1 = true;
                 DoubleBuffer xBuffer = BufferUtils.createDoubleBuffer(1);
@@ -439,8 +436,3 @@ public class Renderer extends AbstractRenderer {
     }
 
 }
-
-// TODO Vytvořte vhodné pixelové programy pro zobrazení povrchu těles znázorňující barevně pozici (souřadnici xyz, hloubku), barvu, texturu, normálu a souřadnice do textury.
-// TODO Reflektorový zdroj světla a útlum prostředí. Implementujte hladký přechod na okraji reflektoro  vého světla.
-// TODO Na vhodných tělesech znázorněte rozdíl mezi výpočtem osvětlení per vertex a per pixel.
-// TODO ??? Implementujte metodu pro výpočet vržených stínů ShadowMaps. Uvažujte alespoň jeden pohybující se zdroj světla a dvě různá zároveň zobrazená tělesa. Alespoň jedno těleso se musí pohybovat. Pro znázornění vržených stínu vykreslete rovinnou podložku s vypočteným osvětlením. ????

@@ -28,10 +28,17 @@ vec3 getSphere(vec2 vec){
 
 
 vec3 getWTF(vec2 vec){
-	float x = vec.x;
-	float y = vec.y;
-	float z = sin(time+x);
+	float s = vec.x * sin(pi/2);
+	float t = vec.y * pi;
+	float rho = 1+0.2*sin(2*s)*sin(-3*t);
+	float phi = t;
+	float theta = s;
+
+	float x = rho * cos(phi) * cos(theta);
+	float y = rho * sin(phi) * cos(theta);
+	float z = rho * sin(theta);
 	return vec3(x, y, z);
+
 }
 
 vec3 getWeirdSphere(vec2 vec){
@@ -62,6 +69,14 @@ vec3 getParsur(vec2 vec){
 	float x = t* cos(s);
 	float y =  t * sin(s);
 	float z =t;
+	return vec3(x, y, z);
+}
+vec3 getParsur2(vec2 vec){
+	float s = pi*vec.x;
+	float t = vec.y;
+	float x = pow(4/3,t)*2*sin(t)*cos(s);
+	float y = pow(4/3,t)*sin(t)*sin(s);
+	float z = pow(4/3,s)*2*sin(t)*cos(t);
 	return vec3(x, y, z);
 }
 
@@ -116,10 +131,14 @@ void main() {
 		else if (teleso == 5.0){
 			pos4 = vec4(getBumpySphere(pos), 1.0);
 		}
+		else if (teleso == 6.0){
+			pos4 = vec4(getWTF(pos), 1.0);
+		}
+		else if (teleso == 7.0){
+			pos4 = vec4(getParsur2(pos), 1.0);
+		}
 	} else if (type==0){
 		pos4 = vec4(getPlane(pos), 1);
-
 	}
-
 	gl_Position = projection * view * pos4;
 }
