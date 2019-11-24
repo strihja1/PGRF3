@@ -72,7 +72,7 @@ public class Renderer extends AbstractRenderer {
         viewer = new OGLTexture2D.Viewer();
         System.out.println("loading texture");
         try {
-            textureMosaic = new OGLTexture2D("./textures/mosaic.jpg");
+            textureMosaic = new OGLTexture2D("textures/mosaic.jpg");
         } catch (IOException e) {
             e.printStackTrace();
         }
